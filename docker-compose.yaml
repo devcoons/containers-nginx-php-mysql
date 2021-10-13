@@ -1,0 +1,42 @@
+version: '3.7'
+services:
+
+  web-app:
+    build: 
+      context: ./
+      dockerfile: ./.dockers/web-app/Dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME}_app
+    hostname: ${COMPOSE_PROJECT_NAME}_app
+    restart: always
+    volumes:
+      - .apps/web-app/:/var/www/
+    working_dir: /var/www/
+    ports:
+      - 0.0.0.0:${WEB_APP_PORT}:8080
+    depends_on:
+      - web-app-db
+
+      
+  web-app-db:
+    build: 
+      context: ./
+      dockerfile: ./.dockers/web-app-db/Dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME}_web-app-db
+    hostname: ${COMPOSE_PROJECT_NAME}_web-app-db
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${WEB_APP_DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${WEB_APP_DB_NAME} 
+    ports:
+      - ${WEB_APP_DB_PORT}:3306  
+      - ${WEB_APP_DB_PORT}0:33060
+    volumes:  
+      - volume-db-lib:/var/lib/mysql/
+      - volume-db-log:/var/log/mysql/
+
+    
+volumes:
+  volume-db-lib:
+    name: volume-${COMPOSE_PROJECT_NAME}_web-app-db-lib
+  volume-db-log:
+    name: volume-${COMPOSE_PROJECT_NAME}_web-app-db-log
